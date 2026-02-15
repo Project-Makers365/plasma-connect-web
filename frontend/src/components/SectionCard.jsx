@@ -1,0 +1,20 @@
+function SectionCard({ title, children, action, icon: Icon }) {
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50/70 p-5 shadow-soft">
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {Icon ? (
+            <span className="rounded-lg bg-brand-50 p-2 text-brand-700 shadow-sm">
+              <Icon />
+            </span>
+          ) : null}
+          <h3 className="text-base font-semibold text-slate-800">{title}</h3>
+        </div>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+export default SectionCard;
