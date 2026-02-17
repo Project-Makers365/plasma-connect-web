@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 module.exports = {
-  port: Number(process.env.PORT || 5000),
+  port: Number(process.env.PORT || 8000),
   jwtSecret: process.env.JWT_SECRET || 'change-me',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   db: {
@@ -15,5 +15,5 @@ module.exports = {
     dialect: 'mysql',
     logging: process.env.DB_LOGGING === 'true' ? console.log : false,
   },
-  clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:3000',
+  clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:5000',
 };

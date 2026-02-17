@@ -5,12 +5,16 @@ const routes = require('./routes');
 const { errorHandler } = require('./middleware/error.middleware');
 
 const app = express();
-const allowedOrigins = env.clientOrigin.split(',').map((item) => item.trim());
+const allowedOrigins = env.clientOrigin
+  .split(',')
+  .map((item) => item.trim().replace(/\/$/, ''))
+  .filter(Boolean);
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      const normalizedOrigin = typeof origin === 'string' ? origin.replace(/\/$/, '') : origin;
+      if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin)) {
         return callback(null, true);
       }
       return callback(new Error('Not allowed by CORS'));

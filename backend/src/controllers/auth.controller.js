@@ -112,38 +112,33 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const user = await User.findOne({ where: { email } });
 
   const genericResponse = {
-    message: 'If the account exists, password reset instructions were generated',
+    message: 'If the account exists, a password reset OTP was generated',
   };
 
   if (!user) {
     return res.json(genericResponse);
   }
 
-  const resetToken = crypto.randomBytes(32).toString('hex');
-  const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+  const otp = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+  const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-  user.resetPasswordToken = resetTokenHash;
+  user.resetPasswordToken = otpHash;
   user.resetPasswordExpiresAt = expiresAt;
   await user.save();
 
-  // For demo/dev environments where email service is not configured.
-  if (process.env.NODE_ENV !== 'production') {
-    return res.json({
-      ...genericResponse,
-      resetToken,
-      expiresAt,
-    });
-  }
-
-  return res.json(genericResponse);
+  return res.json({
+    ...genericResponse,
+    otp,
+    expiresAt,
+  });
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
-  const { token, newPassword } = req.body;
+  const { email, otp, newPassword } = req.body;
 
-  if (!token || !newPassword) {
-    throw new HttpError(400, 'token and newPassword are required');
+  if (!email || !otp || !newPassword) {
+    throw new HttpError(400, 'email, otp and newPassword are required');
   }
 
   if (!isStrongPassword(newPassword)) {
@@ -153,17 +148,22 @@ const resetPassword = asyncHandler(async (req, res) => {
     );
   }
 
-  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  if (!/^\d{6}$/.test(String(otp))) {
+    throw new HttpError(400, 'OTP must be a 6-digit code');
+  }
+
+  const otpHash = crypto.createHash('sha256').update(String(otp)).digest('hex');
 
   const user = await User.findOne({
     where: {
-      resetPasswordToken: tokenHash,
+      email,
+      resetPasswordToken: otpHash,
       resetPasswordExpiresAt: { [Op.gt]: new Date() },
     },
   });
 
   if (!user) {
-    throw new HttpError(400, 'Invalid or expired reset token');
+    throw new HttpError(400, 'Invalid or expired OTP');
   }
 
   user.password = await bcrypt.hash(newPassword, 10);

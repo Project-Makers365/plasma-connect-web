@@ -7,30 +7,31 @@ function ForgotPasswordPage() {
   const [error, setError] = useState('');
   const [resetInfo, setResetInfo] = useState('');
   const [forgotEmail, setForgotEmail] = useState('');
-  const [resetToken, setResetToken] = useState('');
+  const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  async function requestResetToken() {
+  async function requestResetOtp() {
     setError('');
     setResetInfo('');
     if (!forgotEmail.trim()) {
-      setError('Enter your email to request reset token.');
+      setError('Enter your email to receive OTP.');
       return;
     }
 
     try {
       setLoading(true);
       const { data } = await api.post('/auth/forgot-password', { email: forgotEmail.trim() });
-      if (data.resetToken) {
-        setResetToken(data.resetToken);
-        setResetInfo(`Reset token generated for dev. Expires at ${new Date(data.expiresAt).toLocaleString()}.`);
-      } else {
-        setResetInfo(data.message || 'If account exists, reset instructions were generated.');
+      if (data.otp) {
+        setOtp(String(data.otp));
+        const expires = data.expiresAt ? new Date(data.expiresAt).toLocaleString() : '';
+        setResetInfo(`Dev OTP generated: ${data.otp}${expires ? ` (expires: ${expires})` : ''}`);
+        return;
       }
+      setResetInfo(data.message || 'If account exists, OTP has been sent to email.');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to request password reset');
     } finally {
@@ -41,8 +42,12 @@ function ForgotPasswordPage() {
   async function submitPasswordReset() {
     setError('');
     setResetInfo('');
-    if (!resetToken.trim()) {
-      setError('Enter reset token.');
+    if (!forgotEmail.trim()) {
+      setError('Enter your account email.');
+      return;
+    }
+    if (!otp.trim()) {
+      setError('Enter OTP from your email.');
       return;
     }
     if (!newPassword || !confirmPassword) {
@@ -56,7 +61,11 @@ function ForgotPasswordPage() {
 
     try {
       setLoading(true);
-      const { data } = await api.post('/auth/reset-password', { token: resetToken.trim(), newPassword });
+      const { data } = await api.post('/auth/reset-password', {
+        email: forgotEmail.trim(),
+        otp: otp.trim(),
+        newPassword,
+      });
       setResetInfo(data.message || 'Password reset successful.');
       setNewPassword('');
       setConfirmPassword('');
@@ -78,7 +87,7 @@ function ForgotPasswordPage() {
         </div>
 
         <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900"><FaKey className="text-brand-700" /> Forgot Password</h1>
-        <p className="mt-1 text-sm text-slate-600">Request a token and reset your password securely.</p>
+        <p className="mt-1 text-sm text-slate-600">Get OTP on your email and reset your password securely.</p>
 
         {error && <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         {resetInfo && <p className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{resetInfo}</p>}
@@ -94,17 +103,17 @@ function ForgotPasswordPage() {
           <button
             type="button"
             className="rounded-md bg-slate-900 px-3 py-2 text-white disabled:opacity-60 md:col-span-2"
-            onClick={requestResetToken}
+            onClick={requestResetOtp}
             disabled={loading}
           >
-            {loading ? 'Requesting...' : 'Request Reset Token'}
+            {loading ? 'Requesting...' : 'Send OTP'}
           </button>
 
           <input
             className="rounded-md border border-slate-300 px-3 py-2 md:col-span-2"
-            placeholder="Reset token"
-            value={resetToken}
-            onChange={(e) => setResetToken(e.target.value)}
+            placeholder="6-digit OTP"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
           />
           <div className="relative">
             <input

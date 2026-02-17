@@ -97,7 +97,7 @@ Copy from `backend/.env.example`:
 ```env
 PORT=5000
 NODE_ENV=development
-CLIENT_ORIGIN=http://localhost:3000
+CLIENT_ORIGIN=http://localhost:5000
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=plasma_connect
@@ -131,7 +131,7 @@ FAST_REFRESH=false
    - `npm install`
    - `npm start`
 4. Open app:
-   - `http://localhost:3000`
+   - `http://localhost:5000`
 
 ## Default Seed Accounts
 Password for all: `Password@123`

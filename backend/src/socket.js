@@ -5,7 +5,10 @@ const { verifyToken } = require('./utils/jwt');
 let io;
 
 function getAllowedOrigins() {
-  return env.clientOrigin.split(',').map((item) => item.trim());
+  return env.clientOrigin
+    .split(',')
+    .map((item) => item.trim().replace(/\/$/, ''))
+    .filter(Boolean);
 }
 
 function initSocket(httpServer) {
