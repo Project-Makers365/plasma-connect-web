@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../api/client';
 import SectionCard from '../../components/SectionCard';
 import { FaBoxes, FaCheckCircle, FaClipboardCheck, FaTimesCircle } from 'react-icons/fa';
@@ -22,19 +23,33 @@ function BloodBankDashboard() {
   const totalUnits = useMemo(() => stocks.reduce((sum, stock) => sum + Number(stock.unitsAvailable || 0), 0), [stocks]);
 
   async function saveStock() {
-    await api.put('/blood-banks/stocks', {
-      bloodGroup: stockForm.bloodGroup,
-      unitsAvailable: Number(stockForm.unitsAvailable),
-    });
-    setStockForm({ bloodGroup: 'A+', unitsAvailable: 0 });
-    setFeedback('Stock updated successfully.');
-    loadData();
+    try {
+      await api.put('/blood-banks/stocks', {
+        bloodGroup: stockForm.bloodGroup,
+        unitsAvailable: Number(stockForm.unitsAvailable),
+      });
+      setStockForm({ bloodGroup: 'A+', unitsAvailable: 0 });
+      setFeedback('Stock updated successfully.');
+      toast.success('Stock updated successfully');
+      loadData();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update stock';
+      setFeedback(message);
+      toast.error(message);
+    }
   }
 
   async function respond(id, status) {
-    await api.patch(`/blood-banks/requests/${id}/respond`, { status });
-    setFeedback(`Request #${id} updated to ${status}.`);
-    loadData();
+    try {
+      await api.patch(`/blood-banks/requests/${id}/respond`, { status });
+      setFeedback(`Request #${id} updated to ${status}.`);
+      toast.success(`Request #${id} updated to ${status}`);
+      loadData();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update request';
+      setFeedback(message);
+      toast.error(message);
+    }
   }
 
   return (

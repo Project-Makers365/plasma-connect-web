@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { FaIdCard, FaSyncAlt, FaUserCircle } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { FaArrowLeft, FaIdCard, FaSyncAlt, FaUserCircle } from 'react-icons/fa';
 import api from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import SectionCard from '../components/SectionCard';
@@ -26,14 +28,19 @@ function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const refreshProfile = useCallback(async () => {
+  const refreshProfile = useCallback(async (showSuccessToast = false) => {
     setLoading(true);
     setError('');
     try {
       const { data } = await api.get('/auth/me');
       setUser(data.user);
+      if (showSuccessToast) {
+        toast.success(`${data.user?.name || 'User'} profile refreshed`);
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load profile details');
+      const message = err.response?.data?.message || 'Failed to load profile details';
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -45,13 +52,21 @@ function ProfilePage() {
 
   return (
     <div className="space-y-4">
+      <Link
+        to="/dashboard"
+        className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+      >
+        <FaArrowLeft />
+        Back to Home
+      </Link>
+
       <SectionCard
         title="My Profile"
         icon={FaUserCircle}
         action={(
           <button
             type="button"
-            onClick={refreshProfile}
+            onClick={() => refreshProfile(true)}
             disabled={loading}
             className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
           >

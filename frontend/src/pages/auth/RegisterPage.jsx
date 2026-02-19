@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import MapPicker from '../../components/MapPicker';
 import { FaCheckCircle, FaCrosshairs, FaEye, FaEyeSlash, FaMapMarkedAlt, FaUserPlus } from 'react-icons/fa';
@@ -77,6 +78,7 @@ function RegisterPage() {
       }
     } catch {
       setGeoError('Location detected, but address lookup failed. You can enter address manually.');
+      toast.error('Address lookup failed for selected location');
     } finally {
       setAddressLoading(false);
     }
@@ -98,12 +100,15 @@ function RegisterPage() {
         const lng = position.coords.longitude;
         updateLocation({ lat, lng });
         reverseGeocodeAndFillAddress(lat, lng).finally(() => {
+          toast.success('Current location updated');
           setGeoLoading(false);
         });
       },
       (positionError) => {
         setGeoLoading(false);
-        setGeoError(positionError.message || 'Unable to fetch your location.');
+        const message = positionError.message || 'Unable to fetch your location.';
+        setGeoError(message);
+        toast.error(message);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
@@ -122,16 +127,21 @@ function RegisterPage() {
     setSubmitting(true);
 
     try {
-      await register({
+      const registeredUser = await register({
         ...form,
         bloodGroup: needsBlood ? form.bloodGroup : null,
       });
+      toast.success(`Registration successful for ${registeredUser?.name || form.name || 'User'}`);
       navigate('/dashboard');
     } catch (err) {
       if (err.code === 'ECONNABORTED') {
-        setError('Server timeout. Please check backend and try again.');
+        const message = 'Server timeout. Please check backend and try again.';
+        setError(message);
+        toast.error(message);
       } else {
-        setError(err.response?.data?.message || 'Registration failed');
+        const message = err.response?.data?.message || 'Registration failed';
+        setError(message);
+        toast.error(message);
       }
     } finally {
       setSubmitting(false);

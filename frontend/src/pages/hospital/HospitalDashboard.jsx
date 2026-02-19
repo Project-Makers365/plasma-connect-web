@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../api/client';
 import SectionCard from '../../components/SectionCard';
 import { FaAmbulance, FaClipboardList } from 'react-icons/fa';
@@ -38,10 +39,17 @@ function HospitalDashboard() {
     if (targetType === 'DONOR') payload.donorId = Number(targetId);
     if (targetType === 'BLOOD_BANK') payload.bloodBankId = Number(targetId);
 
-    await api.post('/hospitals/emergency-requests', payload);
-    setFeedback('Emergency request created successfully.');
-    setTargetId('');
-    loadData();
+    try {
+      await api.post('/hospitals/emergency-requests', payload);
+      setFeedback('Emergency request created successfully.');
+      toast.success('Emergency request created successfully');
+      setTargetId('');
+      loadData();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to create emergency request';
+      setFeedback(message);
+      toast.error(message);
+    }
   }
 
   return (

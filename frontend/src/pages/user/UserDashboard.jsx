@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../api/client';
 import SectionCard from '../../components/SectionCard';
 import DonorMap from '../../components/DonorMap';
@@ -51,23 +52,36 @@ function UserDashboard() {
     return { pending, accepted, fulfilled };
   }, [myRequests]);
 
-  async function createDonorRequest(donorId) {
-    await api.post('/users/requests', {
-      bloodGroup: filters.bloodGroup,
-      units: 1,
-      targetType: 'DONOR',
-      donorId,
-      note: 'Need plasma support',
-    });
-    setFeedback('Request sent successfully.');
-    loadRequests();
+  async function createDonorRequest(donor) {
+    try {
+      await api.post('/users/requests', {
+        bloodGroup: filters.bloodGroup,
+        units: 1,
+        targetType: 'DONOR',
+        donorId: donor.id,
+        note: 'Need plasma support',
+      });
+      setFeedback('Request sent successfully.');
+      toast.success(`Request sent to ${donor.name || 'donor'} successfully`);
+      loadRequests();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to send request';
+      setFeedback(message);
+      toast.error(message);
+    }
   }
 
   async function markNotificationRead(notificationId) {
-    await api.patch(`/notifications/${notificationId}/read`);
-    setNotifications((prev) =>
-      prev.map((item) => (item.id === notificationId ? { ...item, isRead: true } : item)),
-    );
+    try {
+      await api.patch(`/notifications/${notificationId}/read`);
+      setNotifications((prev) =>
+        prev.map((item) => (item.id === notificationId ? { ...item, isRead: true } : item)),
+      );
+      toast.success('Notification marked as read');
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update notification';
+      toast.error(message);
+    }
   }
 
   return (
@@ -110,7 +124,7 @@ function UserDashboard() {
                   <p className="font-semibold text-slate-800">{donor.name} ({donor.bloodGroup})</p>
                   <p className="text-slate-500">{donor.distanceKm} km away | {donor.phone}</p>
                 </div>
-                <button className="rounded-md bg-slate-900 px-3 py-2 text-white" onClick={() => createDonorRequest(donor.id)}>Send Request</button>
+                <button className="rounded-md bg-slate-900 px-3 py-2 text-white" onClick={() => createDonorRequest(donor)}>Send Request</button>
               </div>
             ))
           )}

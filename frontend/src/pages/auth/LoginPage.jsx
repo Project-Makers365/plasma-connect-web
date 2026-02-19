@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { FaCheckCircle, FaEye, FaEyeSlash, FaSignInAlt, FaUserShield } from 'react-icons/fa';
 
@@ -14,10 +15,13 @@ function LoginPage() {
     event.preventDefault();
     setError('');
     try {
-      await login(form.email, form.password);
+      const loggedInUser = await login(form.email, form.password);
+      toast.success(`Welcome, ${loggedInUser?.name || 'User'}!`);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      const message = err.response?.data?.message || 'Login failed';
+      setError(message);
+      toast.error(message);
     }
   }
 

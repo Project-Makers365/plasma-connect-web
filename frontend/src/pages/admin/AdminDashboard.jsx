@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../api/client';
 import SectionCard from '../../components/SectionCard';
 import {
@@ -54,16 +55,24 @@ function AdminDashboard() {
     return { total: allRequests.length, pending, accepted, rejected, fulfilled };
   }, [allRequests]);
 
-  async function updateBlock(userId, blocked) {
-    await api.patch(`/admin/users/${userId}/${blocked ? 'block' : 'unblock'}`);
-    setFeedback(`User #${userId} ${blocked ? 'blocked' : 'unblocked'} successfully.`);
-    loadData();
+  async function updateBlock(userId, blocked, userName) {
+    try {
+      await api.patch(`/admin/users/${userId}/${blocked ? 'block' : 'unblock'}`);
+      setFeedback(`User #${userId} ${blocked ? 'blocked' : 'unblocked'} successfully.`);
+      toast.success(`${userName || `User #${userId}`} ${blocked ? 'blocked' : 'unblocked'} successfully`);
+      loadData();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update block status';
+      setFeedback(message);
+      toast.error(message);
+    }
   }
 
   function requestPasswordReset(user) {
     const newPassword = (passwordDrafts[user.id] || '').trim();
     if (!newPassword) {
       setFeedback('Enter a new password first.');
+      toast.error('Enter a new password first');
       return;
     }
     setPendingResetUser(user);
@@ -76,6 +85,7 @@ function AdminDashboard() {
 
     if (!newPassword) {
       setFeedback('Enter a new password first.');
+      toast.error('Enter a new password first');
       setPendingResetUser(null);
       return;
     }
@@ -85,8 +95,11 @@ function AdminDashboard() {
       await api.patch(`/admin/users/${userId}/reset-password`, { newPassword });
       setPasswordDrafts((prev) => ({ ...prev, [userId]: '' }));
       setFeedback(`Password reset successful for user #${userId}.`);
+      toast.success(`Password reset successful for ${pendingResetUser?.name || `user #${userId}`}`);
     } catch (error) {
-      setFeedback(error.response?.data?.message || 'Failed to reset password');
+      const message = error.response?.data?.message || 'Failed to reset password';
+      setFeedback(message);
+      toast.error(message);
     } finally {
       setIsResetting(false);
       setPendingResetUser(null);
@@ -98,7 +111,9 @@ function AdminDashboard() {
       const { data } = await api.get(`/admin/users/${userId}`);
       setViewUserDetails(data);
     } catch (error) {
-      setFeedback(error.response?.data?.message || 'Failed to load user details');
+      const message = error.response?.data?.message || 'Failed to load user details';
+      setFeedback(message);
+      toast.error(message);
     }
   }
 
@@ -135,10 +150,13 @@ function AdminDashboard() {
       });
 
       setFeedback(`User #${editUser.id} updated successfully.`);
+      toast.success(`${editUser.name || `User #${editUser.id}`} updated successfully`);
       setEditUser(null);
       loadData();
     } catch (error) {
-      setFeedback(error.response?.data?.message || 'Failed to update user');
+      const message = error.response?.data?.message || 'Failed to update user';
+      setFeedback(message);
+      toast.error(message);
     } finally {
       setSavingEdit(false);
     }
@@ -151,9 +169,12 @@ function AdminDashboard() {
     try {
       await api.delete(`/admin/users/${user.id}`);
       setFeedback(`User #${user.id} deleted successfully.`);
+      toast.success(`${user.name || `User #${user.id}`} deleted successfully`);
       loadData();
     } catch (error) {
-      setFeedback(error.response?.data?.message || 'Failed to delete user');
+      const message = error.response?.data?.message || 'Failed to delete user';
+      setFeedback(message);
+      toast.error(message);
     }
   }
 
@@ -209,7 +230,7 @@ function AdminDashboard() {
                       <button
                         type="button"
                         className={`rounded-md px-3 py-1 text-white ${user.isBlocked ? 'bg-brand-600' : 'bg-red-600'}`}
-                        onClick={() => updateBlock(user.id, !user.isBlocked)}
+                        onClick={() => updateBlock(user.id, !user.isBlocked, user.name)}
                       >
                         {user.isBlocked ? 'Unblock' : 'Block'}
                       </button>

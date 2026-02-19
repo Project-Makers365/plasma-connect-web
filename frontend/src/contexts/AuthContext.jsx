@@ -33,12 +33,14 @@ export function AuthProvider({ children }) {
     const { data } = await api.post('/auth/login', { email, password });
     localStorage.setItem('pc_token', data.token);
     setUser(data.user);
+    return data.user;
   }
 
   async function register(payload) {
     const { data } = await api.post('/auth/register', payload);
     localStorage.setItem('pc_token', data.token);
     setUser(data.user);
+    return data.user;
   }
 
   function logout() {

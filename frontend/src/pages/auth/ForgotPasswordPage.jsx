@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../../api/client';
 import { FaArrowLeft, FaEye, FaEyeSlash, FaKey } from 'react-icons/fa';
 
@@ -18,7 +19,9 @@ function ForgotPasswordPage() {
     setError('');
     setResetInfo('');
     if (!forgotEmail.trim()) {
-      setError('Enter your email to receive OTP.');
+      const message = 'Enter your email to receive OTP.';
+      setError(message);
+      toast.error(message);
       return;
     }
 
@@ -29,11 +32,15 @@ function ForgotPasswordPage() {
         setOtp(String(data.otp));
         const expires = data.expiresAt ? new Date(data.expiresAt).toLocaleString() : '';
         setResetInfo(`Dev OTP generated: ${data.otp}${expires ? ` (expires: ${expires})` : ''}`);
+        toast.success('OTP generated successfully');
         return;
       }
       setResetInfo(data.message || 'If account exists, OTP has been sent to email.');
+      toast.success(data.message || 'OTP request submitted');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to request password reset');
+      const message = err.response?.data?.message || 'Failed to request password reset';
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -43,19 +50,27 @@ function ForgotPasswordPage() {
     setError('');
     setResetInfo('');
     if (!forgotEmail.trim()) {
-      setError('Enter your account email.');
+      const message = 'Enter your account email.';
+      setError(message);
+      toast.error(message);
       return;
     }
     if (!otp.trim()) {
-      setError('Enter OTP from your email.');
+      const message = 'Enter OTP from your email.';
+      setError(message);
+      toast.error(message);
       return;
     }
     if (!newPassword || !confirmPassword) {
-      setError('Enter and confirm new password.');
+      const message = 'Enter and confirm new password.';
+      setError(message);
+      toast.error(message);
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('New password and confirm password do not match.');
+      const message = 'New password and confirm password do not match.';
+      setError(message);
+      toast.error(message);
       return;
     }
 
@@ -67,10 +82,13 @@ function ForgotPasswordPage() {
         newPassword,
       });
       setResetInfo(data.message || 'Password reset successful.');
+      toast.success(data.message || 'Password reset successful');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to reset password');
+      const message = err.response?.data?.message || 'Failed to reset password';
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

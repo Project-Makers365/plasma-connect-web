@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../api/client';
 import SectionCard from '../../components/SectionCard';
 import { FaCheckCircle, FaClock, FaHistory, FaTimesCircle, FaToggleOn } from 'react-icons/fa';
@@ -31,15 +32,25 @@ function DonorDashboard() {
       setIsAvailable(value);
       await api.patch('/donors/availability', { isAvailable: value });
       setFeedback(`Availability updated to ${value ? 'Available' : 'Not Available'}.`);
+      toast.success(`Availability set to ${value ? 'Available' : 'Not Available'}`);
     } catch (error) {
-      setFeedback(error.response?.data?.message || 'Failed to update availability');
+      const message = error.response?.data?.message || 'Failed to update availability';
+      setFeedback(message);
+      toast.error(message);
     }
   }
 
   async function respond(requestId, status) {
-    await api.patch(`/donors/requests/${requestId}/respond`, { status });
-    setFeedback(`Request #${requestId} marked as ${status}.`);
-    loadData();
+    try {
+      await api.patch(`/donors/requests/${requestId}/respond`, { status });
+      setFeedback(`Request #${requestId} marked as ${status}.`);
+      toast.success(`Request #${requestId} marked as ${status}`);
+      loadData();
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update request status';
+      setFeedback(message);
+      toast.error(message);
+    }
   }
 
   return (
