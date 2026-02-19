@@ -4,22 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="89781d5c-5fdb-4c0a-9994-a96fd62f0dda" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.env.example" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/config/env.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/config/env.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/controllers/auth.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/controllers/auth.controller.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/socket.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/socket.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/auth/ForgotPasswordPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/auth/ForgotPasswordPage.jsx" afterDir="false" />
-    </list>
+    <list default="true" id="89781d5c-5fdb-4c0a-9994-a96fd62f0dda" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="92" />
+    <option name="cachedIndexableFilesCount" value="95" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -77,6 +69,7 @@
       <updated>1771053537089</updated>
       <workItem from="1771053538197" duration="22253000" />
       <workItem from="1771225292184" duration="3673000" />
+      <workItem from="1771313978070" duration="691000" />
     </task>
     <servers />
   </component>

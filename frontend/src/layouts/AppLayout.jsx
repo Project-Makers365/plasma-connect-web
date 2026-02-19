@@ -24,13 +24,13 @@ function AppLayout() {
           </div>
           <div className="flex items-center gap-3 text-sm">
             <NotificationBell />
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <Link to="/profile" className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 transition hover:border-brand-300 hover:bg-brand-50/50">
               <p className="inline-flex items-center gap-2 font-medium text-slate-800">
                 <FaUserCircle className="text-brand-700" />
                 {user?.name || 'User'}
               </p>
-              <p className="text-xs uppercase tracking-wide text-slate-500">{roleLabel(user?.role)}</p>
-            </div>
+              <p className="text-xs uppercase tracking-wide text-slate-500">{roleLabel(user?.role)} - Profile</p>
+            </Link>
             <button type="button" onClick={logout} className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-white">
               <FaSignOutAlt />
               Logout

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import MapPicker from '../../components/MapPicker';
-import { FaCheckCircle, FaEye, FaEyeSlash, FaMapMarkedAlt, FaUserPlus } from 'react-icons/fa';
+import { FaCheckCircle, FaCrosshairs, FaEye, FaEyeSlash, FaMapMarkedAlt, FaUserPlus } from 'react-icons/fa';
 
 const roles = ['USER', 'DONOR', 'HOSPITAL', 'BLOOD_BANK'];
 const groups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -35,6 +35,10 @@ function RegisterPage() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [locationMode, setLocationMode] = useState('current');
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [geoError, setGeoError] = useState('');
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -49,6 +53,68 @@ function RegisterPage() {
 
   const needsBlood = useMemo(() => ['USER', 'DONOR', 'HOSPITAL'].includes(form.role), [form.role]);
   const activeRole = roleDetails[form.role];
+
+  function updateLocation({ lat, lng }) {
+    setForm((prev) => ({ ...prev, latitude: lat, longitude: lng }));
+  }
+
+  async function reverseGeocodeAndFillAddress(lat, lng) {
+    setAddressLoading(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}`,
+        { headers: { Accept: 'application/json' } },
+      );
+
+      if (!response.ok) {
+        throw new Error('Reverse geocoding failed');
+      }
+
+      const data = await response.json();
+      const resolvedAddress = data.display_name || '';
+      if (resolvedAddress) {
+        setForm((prev) => ({ ...prev, address: resolvedAddress }));
+      }
+    } catch {
+      setGeoError('Location detected, but address lookup failed. You can enter address manually.');
+    } finally {
+      setAddressLoading(false);
+    }
+  }
+
+  function fetchCurrentLocation() {
+    if (!navigator.geolocation) {
+      setGeoError('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    setGeoError('');
+    setGeoLoading(true);
+    setLocationMode('current');
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        updateLocation({ lat, lng });
+        reverseGeocodeAndFillAddress(lat, lng).finally(() => {
+          setGeoLoading(false);
+        });
+      },
+      (positionError) => {
+        setGeoLoading(false);
+        setGeoError(positionError.message || 'Unable to fetch your location.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
+  }
+
+  async function handleManualMapSelect(lat, lng) {
+    setLocationMode('manual');
+    setGeoError('');
+    updateLocation({ lat, lng });
+    await reverseGeocodeAndFillAddress(lat, lng);
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -96,16 +162,72 @@ function RegisterPage() {
               {groups.map((group) => <option key={group}>{group}</option>)}
             </select>
           )}
-          <input className="w-full rounded-md border border-slate-300 px-3 py-2 md:col-span-2" placeholder="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
+          <div className="md:col-span-2">
+            <label className="mb-1 block text-sm font-medium text-slate-700">Address</label>
+            <div className="relative">
+              <input
+                className="w-full rounded-md border border-slate-300 px-3 py-2 pr-24"
+                placeholder="Address"
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                required
+              />
+              {(geoLoading || addressLoading) && (
+                <span className="absolute inset-y-0 right-3 inline-flex items-center text-xs text-slate-500">Updating...</span>
+              )}
+            </div>
+          </div>
+          <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3 md:col-span-2">
+            <p className="text-sm font-semibold text-slate-800">Location</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={fetchCurrentLocation}
+                disabled={geoLoading || addressLoading}
+                className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                  locationMode === 'current'
+                    ? 'bg-brand-600 text-white hover:bg-brand-700'
+                    : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <FaCrosshairs />
+                {(geoLoading || addressLoading) ? 'Detecting Location...' : 'Use Current Location'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocationMode('manual')}
+                disabled={geoLoading || addressLoading}
+                className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                  locationMode === 'manual'
+                    ? 'bg-brand-600 text-white hover:bg-brand-700'
+                    : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <FaMapMarkedAlt />
+                Manual Location
+              </button>
+              <p className="text-xs text-slate-600">
+                Use current location or switch to manual and pick on map.
+              </p>
+            </div>
+
+            {geoError && <p className="text-xs text-red-600">{geoError}</p>}
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 p-3">
+        <div className="rounded-xl border border-slate-200 bg-white p-3">
           <p className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700"><FaMapMarkedAlt className="text-brand-700" /> Pick your location</p>
           <MapPicker
             latitude={form.latitude}
             longitude={form.longitude}
-            onSelect={({ lat, lng }) => setForm({ ...form, latitude: lat, longitude: lng })}
+            isInteractive={locationMode === 'manual'}
+            onSelect={({ lat, lng }) => handleManualMapSelect(lat, lng)}
           />
+          <p className="mt-1 text-xs text-slate-500">
+            {locationMode === 'manual'
+              ? 'Manual mode enabled: click or drag on map to update address.'
+              : 'Current location mode: click "Use Current Location" to sync map and address.'}
+          </p>
           <p className="mt-2 text-xs text-slate-500">Selected: {Number(form.latitude).toFixed(4)}, {Number(form.longitude).toFixed(4)}</p>
         </div>
 
