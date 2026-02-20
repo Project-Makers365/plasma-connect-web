@@ -1,17 +1,31 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../api/client';
 import { disconnectSocket } from '../realtime/socket';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const authRoutes = new Set(['/login', '/register', '/forgot-password']);
+
     async function bootstrap() {
       const token = localStorage.getItem('pc_token');
       if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      if (authRoutes.has(location.pathname)) {
+        setLoading(false);
+        return;
+      }
+
+      if (user) {
         setLoading(false);
         return;
       }
@@ -27,7 +41,7 @@ export function AuthProvider({ children }) {
     }
 
     bootstrap();
-  }, []);
+  }, [location.pathname, user]);
 
   async function login(email, password) {
     const { data } = await api.post('/auth/login', { email, password });

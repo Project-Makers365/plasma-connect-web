@@ -15,6 +15,10 @@ function sanitizeUser(user) {
   return plain;
 }
 
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
 function isStrongPassword(password) {
   if (typeof password !== 'string') return false;
   if (password.length < 8 || password.length > 64) return false;
@@ -27,8 +31,9 @@ function isStrongPassword(password) {
 
 const register = asyncHandler(async (req, res) => {
   const { name, email, password, phone, role, bloodGroup, address, latitude, longitude } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
-  if (!name || !email || !password || !phone || !role) {
+  if (!name || !normalizedEmail || !password || !phone || !role) {
     throw new HttpError(400, 'name, email, password, phone and role are required');
   }
 
@@ -36,7 +41,7 @@ const register = asyncHandler(async (req, res) => {
     throw new HttpError(400, 'Invalid role');
   }
 
-  const existing = await User.findOne({ where: { email } });
+  const existing = await User.findOne({ where: { email: normalizedEmail } });
   if (existing) {
     throw new HttpError(409, 'Email already registered');
   }
@@ -45,7 +50,7 @@ const register = asyncHandler(async (req, res) => {
 
   const user = await User.create({
     name,
-    email,
+    email: normalizedEmail,
     password: hashedPassword,
     phone,
     role,
@@ -70,12 +75,13 @@ const register = asyncHandler(async (req, res) => {
 
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
-  if (!email || !password) {
+  if (!normalizedEmail || !password) {
     throw new HttpError(400, 'email and password are required');
   }
 
-  const user = await User.findOne({ where: { email } });
+  const user = await User.findOne({ where: { email: normalizedEmail } });
   if (!user) {
     throw new HttpError(401, 'Invalid credentials');
   }
@@ -104,12 +110,13 @@ const me = asyncHandler(async (req, res) => {
 
 const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
-  if (!email) {
+  if (!normalizedEmail) {
     throw new HttpError(400, 'email is required');
   }
 
-  const user = await User.findOne({ where: { email } });
+  const user = await User.findOne({ where: { email: normalizedEmail } });
 
   const genericResponse = {
     message: 'If the account exists, a password reset OTP was generated',
@@ -136,8 +143,9 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
 const resetPassword = asyncHandler(async (req, res) => {
   const { email, otp, newPassword } = req.body;
+  const normalizedEmail = normalizeEmail(email);
 
-  if (!email || !otp || !newPassword) {
+  if (!normalizedEmail || !otp || !newPassword) {
     throw new HttpError(400, 'email, otp and newPassword are required');
   }
 
@@ -156,7 +164,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({
     where: {
-      email,
+      email: normalizedEmail,
       resetPasswordToken: otpHash,
       resetPasswordExpiresAt: { [Op.gt]: new Date() },
     },

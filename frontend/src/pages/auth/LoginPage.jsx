@@ -15,7 +15,7 @@ function LoginPage() {
     event.preventDefault();
     setError('');
     try {
-      const loggedInUser = await login(form.email, form.password);
+      const loggedInUser = await login(form.email.trim(), form.password);
       toast.success(`Welcome, ${loggedInUser?.name || 'User'}!`);
       navigate('/dashboard');
     } catch (err) {
