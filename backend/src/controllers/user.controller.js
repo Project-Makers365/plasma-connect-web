@@ -60,6 +60,24 @@ const createRequest = asyncHandler(async (req, res) => {
     if (!donor || donor.role !== ROLES.DONOR) {
       throw new HttpError(404, 'Donor not found');
     }
+
+    const existingActiveRequest = await PlasmaRequest.findOne({
+      where: {
+        requesterId: req.user.id,
+        donorId,
+        targetType: REQUEST_TARGET_TYPE.DONOR,
+        status: {
+          [Op.in]: [REQUEST_STATUS.PENDING, REQUEST_STATUS.ACCEPTED],
+        },
+      },
+    });
+
+    if (existingActiveRequest) {
+      throw new HttpError(
+        409,
+        `You already have an active request (#${existingActiveRequest.id}) for this donor. Wait for donor response.`,
+      );
+    }
   }
 
   if (targetType === REQUEST_TARGET_TYPE.BLOOD_BANK) {
@@ -132,7 +150,19 @@ const createRequest = asyncHandler(async (req, res) => {
 const getMyRequests = asyncHandler(async (req, res) => {
   const requests = await PlasmaRequest.findAll({
     where: { requesterId: req.user.id },
-    include: [{ model: RequestStatusLog, as: 'statusLogs' }],
+    include: [
+      { model: RequestStatusLog, as: 'statusLogs' },
+      {
+        model: User,
+        as: 'donor',
+        attributes: ['id', 'name', 'email', 'phone', 'address', 'bloodGroup', 'latitude', 'longitude'],
+      },
+      {
+        model: User,
+        as: 'bloodBank',
+        attributes: ['id', 'name', 'email', 'phone', 'address'],
+      },
+    ],
     order: [['createdAt', 'DESC']],
   });
 
@@ -143,8 +173,8 @@ const getRequestById = asyncHandler(async (req, res) => {
   const request = await PlasmaRequest.findByPk(req.params.id, {
     include: [
       { model: RequestStatusLog, as: 'statusLogs' },
-      { model: User, as: 'donor', attributes: ['id', 'name', 'phone'] },
-      { model: User, as: 'bloodBank', attributes: ['id', 'name', 'phone'] },
+      { model: User, as: 'donor', attributes: ['id', 'name', 'email', 'phone', 'address', 'bloodGroup', 'latitude', 'longitude'] },
+      { model: User, as: 'bloodBank', attributes: ['id', 'name', 'email', 'phone', 'address'] },
       { model: User, as: 'requester', attributes: ['id', 'name', 'phone'] },
     ],
   });

@@ -19,6 +19,15 @@ function UserDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [feedback, setFeedback] = useState('');
 
+  function getDirectionsUrl(donor) {
+    const destination = `${donor.latitude},${donor.longitude}`;
+    if (user?.latitude !== null && user?.latitude !== undefined && user?.longitude !== null && user?.longitude !== undefined) {
+      const origin = `${user.latitude},${user.longitude}`;
+      return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+    }
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+  }
+
   async function search() {
     const { data } = await api.get('/users/donors/search', {
       params: {
@@ -51,6 +60,21 @@ function UserDashboard() {
     const fulfilled = myRequests.filter((item) => item.status === 'FULFILLED').length;
     return { pending, accepted, fulfilled };
   }, [myRequests]);
+
+  const activeDonorRequestIds = useMemo(
+    () =>
+      new Set(
+        myRequests
+          .filter(
+            (item) =>
+              item.targetType === 'DONOR' &&
+              ['PENDING', 'ACCEPTED'].includes(item.status) &&
+              item.donorId,
+          )
+          .map((item) => item.donorId),
+      ),
+    [myRequests],
+  );
 
   async function createDonorRequest(donor) {
     try {
@@ -124,7 +148,13 @@ function UserDashboard() {
                   <p className="font-semibold text-slate-800">{donor.name} ({donor.bloodGroup})</p>
                   <p className="text-slate-500">{donor.distanceKm} km away | {donor.phone}</p>
                 </div>
-                <button className="rounded-md bg-slate-900 px-3 py-2 text-white" onClick={() => createDonorRequest(donor)}>Send Request</button>
+                <button
+                  className="rounded-md bg-slate-900 px-3 py-2 text-white disabled:cursor-not-allowed disabled:bg-slate-400"
+                  onClick={() => createDonorRequest(donor)}
+                  disabled={activeDonorRequestIds.has(donor.id)}
+                >
+                  {activeDonorRequestIds.has(donor.id) ? 'Request Already Sent' : 'Send Request'}
+                </button>
               </div>
             ))
           )}
@@ -138,7 +168,28 @@ function UserDashboard() {
           <div className="space-y-2 text-sm">
             {myRequests.map((request) => (
               <div key={request.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                #{request.id} | {request.bloodGroup} | {request.targetType} | <strong>{request.status}</strong>
+                <p>
+                  #{request.id} | {request.bloodGroup} | {request.targetType} | <strong>{request.status}</strong>
+                </p>
+                {request.status === 'ACCEPTED' && request.targetType === 'DONOR' && request.donor ? (
+                  <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                    <p className="font-semibold text-emerald-900">Accepted Donor Details</p>
+                    <p className="text-emerald-800">Full Name: <strong>{request.donor.name || '-'}</strong></p>
+                    <p className="text-emerald-800">Contact: <strong>{request.donor.phone || '-'}</strong></p>
+                    <p className="text-emerald-800">Mail ID: <strong>{request.donor.email || '-'}</strong></p>
+                    <p className="text-emerald-800">Address: <strong>{request.donor.address || '-'}</strong></p>
+                    {request.donor.latitude !== null && request.donor.latitude !== undefined && request.donor.longitude !== null && request.donor.longitude !== undefined ? (
+                      <a
+                        href={getDirectionsUrl(request.donor)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 inline-flex items-center rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-800"
+                      >
+                        Navigate to Donor
+                      </a>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>
