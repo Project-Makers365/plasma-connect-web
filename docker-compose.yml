@@ -21,6 +21,7 @@ services:
     build: ./backend
     container_name: plasma-backend
     restart: always
+    command: sh -c "node src/seeders/adminSeeder.js && node server.js"
     ports:
       - "8000:8000"
     env_file:
@@ -36,8 +37,11 @@ services:
     build: ./frontend
     container_name: plasma-frontend
     restart: always
+    environment:
+      GEO_HOST_IP: 172.16.16.182
     ports:
       - "3001:80"
+      - "3443:443"
     depends_on:
       - backend
 

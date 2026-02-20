@@ -54,6 +54,15 @@ function RegisterPage() {
 
   const needsBlood = useMemo(() => ['USER', 'DONOR', 'HOSPITAL'].includes(form.role), [form.role]);
   const activeRole = roleDetails[form.role];
+  const insecureOriginBlocksGeolocation = useMemo(() => {
+    const hostname = window.location.hostname;
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+    return !window.isSecureContext && !isLocalhost;
+  }, []);
+  const secureOriginHintUrl = useMemo(
+    () => `${window.location.protocol}//localhost:${window.location.port || '3001'}${window.location.pathname}`,
+    [],
+  );
 
   function updateLocation({ lat, lng }) {
     setForm((prev) => ({ ...prev, latitude: lat, longitude: lng }));
@@ -85,6 +94,12 @@ function RegisterPage() {
   }
 
   function fetchCurrentLocation() {
+    if (insecureOriginBlocksGeolocation) {
+      setGeoError(`Current browser origin is not secure for geolocation. Open ${secureOriginHintUrl} or use HTTPS.`);
+      toast.error('Use localhost or HTTPS for current location');
+      return;
+    }
+
     if (!navigator.geolocation) {
       setGeoError('Geolocation is not supported by this browser.');
       return;
@@ -193,7 +208,7 @@ function RegisterPage() {
               <button
                 type="button"
                 onClick={fetchCurrentLocation}
-                disabled={geoLoading || addressLoading}
+                disabled={geoLoading || addressLoading || insecureOriginBlocksGeolocation}
                 className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
                   locationMode === 'current'
                     ? 'bg-brand-600 text-white hover:bg-brand-700'
@@ -222,6 +237,11 @@ function RegisterPage() {
             </div>
 
             {geoError && <p className="text-xs text-red-600">{geoError}</p>}
+            {insecureOriginBlocksGeolocation && (
+              <p className="text-xs text-amber-700">
+                Geolocation needs a secure origin. Open <a className="underline" href={secureOriginHintUrl}>{secureOriginHintUrl}</a> or use HTTPS.
+              </p>
+            )}
           </div>
         </div>
 

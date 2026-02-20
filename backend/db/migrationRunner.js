@@ -35,6 +35,15 @@ async function getAppliedMigrationNames(queryInterface) {
 
 function loadMigrationFiles() {
   const migrationsDir = path.join(__dirname, 'migrations');
+  const migrationOrder = [
+    'user_table.js',
+    'donor_profile_table.js',
+    'plasma_request_table.js',
+    'request_status_table.js',
+    'plasma_stock_table.js',
+    'notification_table.js',
+  ];
+  const orderIndex = new Map(migrationOrder.map((name, index) => [name, index]));
   const files = fs
     .readdirSync(migrationsDir)
     .filter((file) => file.endsWith('.js'))

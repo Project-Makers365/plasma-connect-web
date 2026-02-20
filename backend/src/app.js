@@ -9,12 +9,18 @@ const allowedOrigins = env.clientOrigin
   .split(',')
   .map((item) => item.trim().replace(/\/$/, ''))
   .filter(Boolean);
+const devLanPattern = /^https?:\/\/172\.16\.16\.\d+:(3000|3001|3443|5000)$/;
 
 app.use(
   cors({
     origin(origin, callback) {
       const normalizedOrigin = typeof origin === 'string' ? origin.replace(/\/$/, '') : origin;
-      if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin)) {
+      if (
+        allowedOrigins.includes('*')
+        || !normalizedOrigin
+        || allowedOrigins.includes(normalizedOrigin)
+        || devLanPattern.test(normalizedOrigin)
+      ) {
         return callback(null, true);
       }
       return callback(new Error('Not allowed by CORS'));
@@ -22,6 +28,7 @@ app.use(
     credentials: true,
   }),
 );
+
 app.use(express.json());
 
 app.use('/api', routes);
