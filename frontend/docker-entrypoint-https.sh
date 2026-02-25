@@ -4,7 +4,6 @@ set -e
 CERT_DIR="/etc/nginx/certs"
 CERT_KEY="${CERT_DIR}/frontend.key"
 CERT_CRT="${CERT_DIR}/frontend.crt"
-HOST_IP="${GEO_HOST_IP:-172.16.16.182}"
 
 mkdir -p "${CERT_DIR}"
 
@@ -23,7 +22,7 @@ ST = Telangana
 L = Hyderabad
 O = Plasma Connect
 OU = Dev
-CN = ${HOST_IP}
+CN = localhost
 
 [v3_req]
 subjectAltName = @alt_names
@@ -31,7 +30,6 @@ subjectAltName = @alt_names
 [alt_names]
 DNS.1 = localhost
 IP.1 = 127.0.0.1
-IP.2 = ${HOST_IP}
 EOF
 
   openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
