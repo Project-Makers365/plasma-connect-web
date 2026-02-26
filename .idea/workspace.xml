@@ -5,13 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="89781d5c-5fdb-4c0a-9994-a96fd62f0dda" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/STATIC_IP_REMOVAL.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/VERIFICATION_COMPLETE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/WINDOWS_COMPATIBILITY.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/start.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/seeders/adminSeeder.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/seeders/adminSeeder.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/backend/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/config/env.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/config/env.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/docker-entrypoint-https.sh" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/docker-entrypoint-https.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/nginx.conf" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/nginx.conf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,7 +26,7 @@
     </persistenceIdMap>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="105" />
+    <option name="cachedIndexableFilesCount" value="111" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -96,7 +98,8 @@
       <workItem from="1771313978070" duration="691000" />
       <workItem from="1771475676831" duration="18103000" />
       <workItem from="1771586720909" duration="7209000" />
-      <workItem from="1772035705559" duration="5731000" />
+      <workItem from="1772035705559" duration="6169000" />
+      <workItem from="1772079126471" duration="2174000" />
     </task>
     <servers />
   </component>

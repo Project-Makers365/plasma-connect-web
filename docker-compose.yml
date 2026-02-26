@@ -38,7 +38,7 @@ services:
     container_name: plasma-frontend
     restart: always
     ports:
-      - "3001:80"
+      - "3033:80"
       - "3443:443"
     depends_on:
       - backend

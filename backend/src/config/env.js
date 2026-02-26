@@ -15,5 +15,5 @@ module.exports = {
     dialect: 'mysql',
     logging: process.env.DB_LOGGING === 'true' ? console.log : false,
   },
-  clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:3500',
+  clientOrigin: process.env.CLIENT_ORIGIN || '*',
 };
