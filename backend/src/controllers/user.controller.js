@@ -4,6 +4,7 @@ const {
   PlasmaRequest,
   RequestStatusLog,
   PlasmaStock,
+  DonorProfile,
 } = require('../models');
 const { REQUEST_STATUS, REQUEST_TARGET_TYPE, ROLES } = require('../constants');
 const asyncHandler = require('../utils/asyncHandler');
@@ -204,10 +205,145 @@ const getRequestHistory = asyncHandler(async (req, res) => {
   res.json({ count: requests.length, requests });
 });
 
+const canBecomeDonor = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  // Check if user was previously a donor
+  const donorProfile = await DonorProfile.findOne({ where: { userId } });
+
+  if (!donorProfile) {
+    // Never donated before, can become donor
+    return res.json({
+      canBecomeDonor: true,
+      message: 'You can become a donor',
+      lastDonationDate: null,
+      daysSinceLastDonation: null,
+    });
+  }
+
+  // Check if 6 months have passed since last donation
+  const lastDonationDate = donorProfile.lastDonationDate;
+  
+  if (!lastDonationDate) {
+    // Has profile but never donated, can become donor
+    return res.json({
+      canBecomeDonor: true,
+      message: 'You can become a donor',
+      lastDonationDate: null,
+      daysSinceLastDonation: null,
+    });
+  }
+
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const lastDonation = new Date(lastDonationDate);
+  const canBecomeDonor = lastDonation <= sixMonthsAgo;
+  const daysSinceLastDonation = Math.floor((new Date() - lastDonation) / (1000 * 60 * 60 * 24));
+  const daysRemaining = Math.max(0, 180 - daysSinceLastDonation);
+
+  res.json({
+    canBecomeDonor,
+    message: canBecomeDonor 
+      ? 'You can become a donor' 
+      : `You must wait ${daysRemaining} more days before you can donate again (6-month rule)`,
+    lastDonationDate: donorProfile.lastDonationDate,
+    daysSinceLastDonation,
+    daysRemaining: canBecomeDonor ? 0 : daysRemaining,
+  });
+});
+
+const convertToDonor = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  // Check if already a donor
+  if (req.user.role === ROLES.DONOR) {
+    throw new HttpError(400, 'You are already registered as a donor');
+  }
+
+  // Check if user was previously a donor
+  let donorProfile = await DonorProfile.findOne({ where: { userId } });
+
+  if (donorProfile && donorProfile.lastDonationDate) {
+    // Check 6-month restriction
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const lastDonation = new Date(donorProfile.lastDonationDate);
+
+    if (lastDonation > sixMonthsAgo) {
+      const daysSinceLastDonation = Math.floor((new Date() - lastDonation) / (1000 * 60 * 60 * 24));
+      const daysRemaining = 180 - daysSinceLastDonation;
+      throw new HttpError(403, `You must wait ${daysRemaining} more days before you can donate again (6-month rule)`);
+    }
+  }
+
+  // Update user role to DONOR
+  const user = await User.findByPk(userId);
+  user.role = ROLES.DONOR;
+  await user.save();
+
+  // Create or update donor profile
+  if (!donorProfile) {
+    await DonorProfile.create({ 
+      userId, 
+      isAvailable: true,
+      totalDonations: 0,
+    });
+  } else {
+    // Reactivate existing profile
+    donorProfile.isAvailable = true;
+    await donorProfile.save();
+  }
+
+  res.json({
+    message: 'Successfully converted to donor',
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  });
+});
+
+const switchToUser = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  // Check if user is a donor
+  if (req.user.role !== ROLES.DONOR) {
+    throw new HttpError(400, 'Only donors can switch to user role');
+  }
+
+  // Update user role to USER
+  const user = await User.findByPk(userId);
+  user.role = ROLES.USER;
+  await user.save();
+
+  // Deactivate donor profile instead of deleting it
+  const donorProfile = await DonorProfile.findOne({ where: { userId } });
+  if (donorProfile) {
+    donorProfile.isAvailable = false;
+    await donorProfile.save();
+  }
+
+  res.json({
+    message: 'Successfully switched to User role',
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  });
+});
+
 module.exports = {
   searchDonors,
   createRequest,
   getMyRequests,
   getRequestById,
   getRequestHistory,
+  canBecomeDonor,
+  convertToDonor,
+  switchToUser,
 };

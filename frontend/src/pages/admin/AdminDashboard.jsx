@@ -180,7 +180,7 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+      <div className="rounded-2xl border border-red-100 bg-white p-5 shadow-soft">
         <h2 className="text-2xl font-bold text-slate-900">Admin Control Center</h2>
         <p className="mt-1 text-sm text-slate-600">Full control over users, requests, role management, and operational analytics.</p>
       </div>
@@ -202,9 +202,9 @@ function AdminDashboard() {
         <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-5">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">Total: <strong>{requestStats.total}</strong></div>
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">Pending: <strong>{requestStats.pending}</strong></div>
-          <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">Accepted: <strong>{requestStats.accepted}</strong></div>
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">Fulfilled: <strong>{requestStats.fulfilled}</strong></div>
-          <div className="rounded-xl border border-rose-200 bg-rose-50 p-3">Rejected: <strong>{requestStats.rejected}</strong></div>
+          <div className="rounded-xl border border-red-200 bg-red-50 p-3">Accepted: <strong>{requestStats.accepted}</strong></div>
+          <div className="rounded-xl border border-green-200 bg-green-50 p-3">Fulfilled: <strong>{requestStats.fulfilled}</strong></div>
+          <div className="rounded-xl border border-slate-200 bg-slate-100 p-3">Rejected: <strong>{requestStats.rejected}</strong></div>
         </div>
       </SectionCard>
 
@@ -229,7 +229,7 @@ function AdminDashboard() {
                     {user.role !== 'ADMIN' && (
                       <button
                         type="button"
-                        className={`rounded-md px-3 py-1 text-white ${user.isBlocked ? 'bg-brand-600' : 'bg-red-600'}`}
+                        className={`rounded-md px-3 py-1 text-white ${user.isBlocked ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-600 hover:bg-slate-700'}`}
                         onClick={() => updateBlock(user.id, !user.isBlocked, user.name)}
                       >
                         {user.isBlocked ? 'Unblock' : 'Block'}
@@ -249,7 +249,7 @@ function AdminDashboard() {
                   <button type="button" className="rounded-md border border-slate-300 px-3 py-1 text-slate-700" onClick={() => setShowPasswords((prev) => ({ ...prev, [user.id]: !prev[user.id] }))}>
                     {showPasswords[user.id] ? <FaEyeSlash /> : <FaEye />}
                   </button>
-                  <button type="button" className="rounded-md bg-slate-900 px-3 py-1 text-white" onClick={() => requestPasswordReset(user)}>
+                  <button type="button" className="rounded-md bg-red-600 px-3 py-1 text-white hover:bg-red-700" onClick={() => requestPasswordReset(user)}>
                     <FaKey className="mr-1 inline" />Reset Password
                   </button>
                 </div>
@@ -260,7 +260,7 @@ function AdminDashboard() {
       </SectionCard>
 
       {pendingResetUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-soft">
             <h3 className="text-lg font-semibold text-slate-900">Confirm Password Reset</h3>
             <p className="mt-2 text-sm text-slate-600">Reset password for <strong>{pendingResetUser.name}</strong> ({pendingResetUser.email})?</p>
@@ -275,7 +275,7 @@ function AdminDashboard() {
       )}
 
       {viewUserDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-2xl rounded-xl bg-white p-5 shadow-soft">
             <h3 className="text-lg font-semibold text-slate-900">User Full Details</h3>
             <p className="mt-1 text-sm text-slate-600">{viewUserDetails.user.name} ({viewUserDetails.user.email})</p>
@@ -295,7 +295,7 @@ function AdminDashboard() {
       )}
 
       {editUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-2xl rounded-xl bg-white p-5 shadow-soft">
             <h3 className="text-lg font-semibold text-slate-900">Edit User</h3>
             <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -312,7 +312,7 @@ function AdminDashboard() {
             </div>
             <div className="mt-4 flex justify-end gap-2">
               <button className="rounded-md border border-slate-300 px-3 py-1" onClick={() => setEditUser(null)} disabled={savingEdit}>Cancel</button>
-              <button className="rounded-md bg-brand-600 px-3 py-1 text-white disabled:opacity-60" onClick={saveUserEdit} disabled={savingEdit}>{savingEdit ? 'Saving...' : 'Save Changes'}</button>
+              <button className="rounded-md bg-red-600 px-3 py-1 text-white hover:bg-red-700 disabled:opacity-60" onClick={saveUserEdit} disabled={savingEdit}>{savingEdit ? 'Saving...' : 'Save Changes'}</button>
             </div>
           </div>
         </div>

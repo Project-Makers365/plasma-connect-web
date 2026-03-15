@@ -4,6 +4,10 @@ const { ROLES } = require('../constants');
 const { haversineDistanceKm } = require('../utils/haversine');
 
 async function matchDonors({ bloodGroup, latitude, longitude, radiusKm = 50 }) {
+  // Calculate 6 months ago date for filtering
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
   const donors = await User.findAll({
     where: {
       role: ROLES.DONOR,
@@ -16,7 +20,14 @@ async function matchDonors({ bloodGroup, latitude, longitude, radiusKm = 50 }) {
       {
         model: DonorProfile,
         as: 'donorProfile',
-        where: { isAvailable: true },
+        where: { 
+          isAvailable: true,
+          // Only include donors who haven't donated in last 6 months or never donated
+          [Op.or]: [
+            { lastDonationDate: null },
+            { lastDonationDate: { [Op.lte]: sixMonthsAgo } },
+          ],
+        },
       },
     ],
     attributes: ['id', 'name', 'bloodGroup', 'phone', 'latitude', 'longitude', 'address'],

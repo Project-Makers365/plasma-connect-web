@@ -1,0 +1,12 @@
+version: "2.0"
+authtoken: 3AwGquUbd9Ru3nwLLFtFT858EdO_3UW9sd9kCASuk5H6tsEVi
+
+tunnels:
+  frontend:
+    addr: 3033
+    proto: http
+    name: plasma-frontend
+  backend:
+    addr: 8001
+    proto: http
+    name: plasma-backend

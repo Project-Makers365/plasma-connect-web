@@ -110,15 +110,15 @@ function UserDashboard() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft">
+      <div className="rounded-2xl border border-red-100 bg-white p-5 shadow-soft">
         <h2 className="text-2xl font-bold text-slate-900">Recipient Dashboard</h2>
         <p className="mt-1 text-sm text-slate-600">Find nearby eligible donors by blood group and location, then track every request in real-time.</p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">Pending: <strong>{requestCounts.pending}</strong></div>
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">Accepted: <strong>{requestCounts.accepted}</strong></div>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Fulfilled: <strong>{requestCounts.fulfilled}</strong></div>
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">Accepted: <strong>{requestCounts.accepted}</strong></div>
+        <div className="rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-800">Fulfilled: <strong>{requestCounts.fulfilled}</strong></div>
       </div>
 
       <SectionCard title="Search Donors" icon={FaSearch}>
@@ -128,12 +128,12 @@ function UserDashboard() {
             {groups.map((group) => <option key={group}>{group}</option>)}
           </select>
           <input className="rounded-md border border-slate-300 px-3 py-2" type="number" min="1" value={filters.radiusKm} onChange={(e) => setFilters({ ...filters, radiusKm: e.target.value })} />
-          <button className="rounded-md bg-brand-600 px-3 py-2 text-white" onClick={search}>Find Matches</button>
+          <button className="rounded-md bg-red-600 px-3 py-2 text-white hover:bg-red-700" onClick={search}>Find Matches</button>
         </div>
 
-        <div className="mb-3 rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-xs text-emerald-800">
+        <div className="mb-3 rounded-xl border border-red-100 bg-red-50 p-3 text-xs text-red-800">
           <span className="inline-flex items-center gap-2 font-medium">
-            <FaMapMarkedAlt /> Search radius: {filters.radiusKm} km
+            <FaMapMarkedAlt className="text-red-600" /> Search radius: {filters.radiusKm} km
           </span>
         </div>
         <DonorMap center={{ latitude: user.latitude, longitude: user.longitude }} donors={matches} />
@@ -149,7 +149,7 @@ function UserDashboard() {
                   <p className="text-slate-500">{donor.distanceKm} km away | {donor.phone}</p>
                 </div>
                 <button
-                  className="rounded-md bg-slate-900 px-3 py-2 text-white disabled:cursor-not-allowed disabled:bg-slate-400"
+                  className="rounded-md bg-red-600 px-3 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
                   onClick={() => createDonorRequest(donor)}
                   disabled={activeDonorRequestIds.has(donor.id)}
                 >
@@ -172,18 +172,18 @@ function UserDashboard() {
                   #{request.id} | {request.bloodGroup} | {request.targetType} | <strong>{request.status}</strong>
                 </p>
                 {request.status === 'ACCEPTED' && request.targetType === 'DONOR' && request.donor ? (
-                  <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-                    <p className="font-semibold text-emerald-900">Accepted Donor Details</p>
-                    <p className="text-emerald-800">Full Name: <strong>{request.donor.name || '-'}</strong></p>
-                    <p className="text-emerald-800">Contact: <strong>{request.donor.phone || '-'}</strong></p>
-                    <p className="text-emerald-800">Mail ID: <strong>{request.donor.email || '-'}</strong></p>
-                    <p className="text-emerald-800">Address: <strong>{request.donor.address || '-'}</strong></p>
+                  <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-3">
+                    <p className="font-semibold text-red-900">Accepted Donor Details</p>
+                    <p className="text-red-800">Full Name: <strong>{request.donor.name || '-'}</strong></p>
+                    <p className="text-red-800">Contact: <strong>{request.donor.phone || '-'}</strong></p>
+                    <p className="text-red-800">Mail ID: <strong>{request.donor.email || '-'}</strong></p>
+                    <p className="text-red-800">Address: <strong>{request.donor.address || '-'}</strong></p>
                     {request.donor.latitude !== null && request.donor.latitude !== undefined && request.donor.longitude !== null && request.donor.longitude !== undefined ? (
                       <a
                         href={getDirectionsUrl(request.donor)}
                         target="_blank"
                         rel="noreferrer"
-                        className="mt-2 inline-flex items-center rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-800"
+                        className="mt-2 inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
                       >
                         Navigate to Donor
                       </a>
@@ -202,11 +202,11 @@ function UserDashboard() {
         ) : (
           <div className="space-y-2 text-sm">
             {notifications.map((notification) => (
-              <div key={notification.id} className={`rounded-xl border p-3 ${notification.isRead ? 'border-slate-200 bg-slate-50' : 'border-emerald-200 bg-emerald-50'}`}>
+              <div key={notification.id} className={`rounded-xl border p-3 ${notification.isRead ? 'border-slate-200 bg-slate-50' : 'border-red-200 bg-red-50'}`}>
                 <p className="font-semibold">{notification.title}</p>
                 <p>{notification.message}</p>
                 {!notification.isRead && (
-                  <button className="mt-2 rounded-md bg-brand-600 px-3 py-1 text-xs text-white" onClick={() => markNotificationRead(notification.id)}>
+                  <button className="mt-2 rounded-md bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700" onClick={() => markNotificationRead(notification.id)}>
                     Mark Read
                   </button>
                 )}

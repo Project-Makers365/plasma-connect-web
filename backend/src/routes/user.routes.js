@@ -5,6 +5,9 @@ const {
   getMyRequests,
   getRequestById,
   getRequestHistory,
+  canBecomeDonor,
+  convertToDonor,
+  switchToUser,
 } = require('../controllers/user.controller');
 const {
   getMyNotifications,
@@ -16,7 +19,15 @@ const { ROLES } = require('../constants');
 
 const router = express.Router();
 
-router.use(authenticate, authorize(ROLES.USER, ROLES.HOSPITAL));
+router.use(authenticate);
+
+// Role conversion routes (available to USER and DONOR roles)
+router.get('/can-become-donor', authorize(ROLES.USER, ROLES.DONOR), canBecomeDonor);
+router.post('/convert-to-donor', authorize(ROLES.USER), convertToDonor);
+router.post('/switch-to-user', authorize(ROLES.DONOR), switchToUser);
+
+// Routes that require USER or HOSPITAL role
+router.use(authorize(ROLES.USER, ROLES.HOSPITAL));
 
 router.get('/donors/search', searchDonors);
 router.post('/requests', createRequest);
